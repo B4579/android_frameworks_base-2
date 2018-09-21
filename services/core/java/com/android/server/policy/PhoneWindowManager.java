@@ -620,6 +620,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // (See LineageSettings.Secure.RING_HOME_BUTTON_BEHAVIOR.)
     int mRingHomeBehavior;
 
+    // The home button wake
+    boolean mHomeWakeButton;
+
     // Allowed theater mode wake actions
     private boolean mAllowTheaterModeWakeFromKey;
     private boolean mAllowTheaterModeWakeFromPowerKey;
@@ -967,7 +970,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.LOCKSCREEN_ENABLE_POWER_MENU), true, this,
                     UserHandle.USER_ALL);
-
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HOME_WAKE_BUTTON), false, this,
+                    UserHandle.USER_ALL);
             updateSettings();
         }
 
@@ -2635,6 +2640,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mClickPartialScreenshot = LineageSettings.System.getIntForUser(resolver,
                     LineageSettings.System.CLICK_PARTIAL_SCREENSHOT, 0,
                     UserHandle.USER_CURRENT) == 1;
+
+	        // home wake button
+            mHomeWakeButton = Settings.System.getIntForUser(resolver,
+                    Settings.System.HOME_WAKE_BUTTON, 0, UserHandle.USER_CURRENT) != 0;
 
             // Configure wake gesture.
             boolean wakeGestureEnabledSetting = Settings.Secure.getIntForUser(resolver,
@@ -4372,15 +4381,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             }
 
-            case KeyEvent.KEYCODE_HOME:
-                if (down && !interactive) {
-                    isWakeKey = mWakeOnHomeKeyPress;
-                    if (!isWakeKey) {
-                        useHapticFeedback = false;
-                    }
-                }
-                break;
-
             case KeyEvent.KEYCODE_FOCUS:
                 if (down && !interactive && mCameraSleepOnRelease) {
                     mIsFocusPressed = true;
@@ -4422,6 +4422,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         isWakeKey = true;
                         startActivityAsUser(intent, UserHandle.CURRENT_OR_SELF);
                     }
+                }
+                break;
+
+            case KeyEvent.KEYCODE_HOME:
+                if (down && !interactive && mHomeWakeButton) {
+                    isWakeKey = true;
+                    useHapticFeedback = false;
                 }
                 break;
 

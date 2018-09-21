@@ -5656,6 +5656,12 @@ public final class Settings {
         public static final String GAMING_MODE_ACTIVE = "gaming_mode_active";
 
         /**
+         * Home wake button
+         * @hide
+         */
+        public static final String HOME_WAKE_BUTTON = "home_wake_button";
+
+        /**
          * Whether to dynamically identify the launched application and
          * add it to {@link GAMING_MODE_APP_LIST}.
          * Default 1
